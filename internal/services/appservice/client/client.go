@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-01-01/appserviceenvironments"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-01-01/appserviceplans"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-01-01/resourceproviders"
+	"github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-01-01/staticsites"
 	"github.com/hashicorp/go-azure-sdk/resource-manager/web/2023-01-01/webapps"
 	"github.com/hashicorp/terraform-provider-azurerm/internal/common"
 	"github.com/tombuildsstuff/kermit/sdk/web/2022-09-01/web"
@@ -19,6 +20,7 @@ type Client struct {
 	BaseClient                  *web.BaseClient
 	ResourceProvidersClient     *resourceproviders.ResourceProvidersClient
 	ServicePlanClient           *appserviceplans.AppServicePlansClient
+	StaticSitesClient           *staticsites.StaticSitesClient
 	WebAppsClient               *webapps.WebAppsClient
 }
 
@@ -44,6 +46,12 @@ func NewClient(o *common.ClientOptions) (*Client, error) {
 	}
 	o.Configure(resourceProvidersClient.Client, o.Authorizers.ResourceManager)
 
+	staticSitesClient, err := staticsites.NewStaticSitesClientWithBaseURI(o.Environment.ResourceManager)
+	if err != nil {
+		return nil, fmt.Errorf("building ServicePlan client: %+v", err)
+	}
+	o.Configure(staticSitesClient.Client, o.Authorizers.ResourceManager)
+
 	servicePlanClient, err := appserviceplans.NewAppServicePlansClientWithBaseURI(o.Environment.ResourceManager)
 	if err != nil {
 		return nil, fmt.Errorf("building ServicePlan client: %+v", err)
@@ -55,6 +63,7 @@ func NewClient(o *common.ClientOptions) (*Client, error) {
 		BaseClient:                  &baseClient,
 		ResourceProvidersClient:     resourceProvidersClient,
 		ServicePlanClient:           servicePlanClient,
+		StaticSitesClient:           staticSitesClient,
 		WebAppsClient:               webAppServiceClient,
 	}, nil
 }
